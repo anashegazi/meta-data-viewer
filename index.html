@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>صفحات الإعلانات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#F0F2F5;--card:#fff;--text:#050505;--muted:#65676B;--blue:#1877F2;--blue-soft:#E7F3FF;--line:#CED0D4;--hover:#E4E6EB;--shadow:0 1px 2px rgba(0,0,0,.2)}
+:root[data-theme="dark"]{--bg:#18191A;--card:#242526;--text:#E4E6EB;--muted:#B0B3B8;--blue:#2D88FF;--blue-soft:#263951;--line:#3E4042;--hover:#3A3B3C;--shadow:0 1px 2px rgba(0,0,0,.6)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Cairo','Segoe UI',Tahoma,sans-serif;line-height:1.6}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.top{position:sticky;top:0;z-index:5;background:var(--card);box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;padding:8px 16px}
+.logo{width:40px;height:40px;border-radius:50%;background:var(--blue);display:grid;place-items:center;flex:none}
+.logo svg{width:22px;height:22px;fill:#fff}
+.top h1{font-size:20px;font-weight:800;margin:0;color:var(--blue);flex:1}
+.icon-btn{width:40px;height:40px;border-radius:50%;border:0;background:var(--hover);cursor:pointer;display:grid;place-items:center}
+.icon-btn svg{width:20px;height:20px;fill:var(--text)}
+main{max-width:1120px;margin:0 auto;padding:16px}
+.drop{background:var(--card);border:2px dashed var(--line);border-radius:8px;padding:28px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--blue);background:var(--blue-soft)}
+.drop strong{display:block;font-size:18px;font-weight:700}
+.drop span{color:var(--muted);font-size:14px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0 8px}
+.tools input[type=search],.tools select{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 16px;height:38px}
+.tools input[type=search]{flex:1;min-width:180px}
+.count{color:var(--muted);font-size:14px;margin-inline-start:auto}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:2px 14px;cursor:pointer;font-size:14px;font-weight:600}
+.chip[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:14px}
+.head{display:flex;gap:12px;align-items:center}
+.av{width:52px;height:52px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-weight:800;font-size:22px}
+.head h3{margin:0;font-size:17px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+.head small{color:var(--muted);font-size:13px}
+dl{margin:0;display:grid;gap:10px}
+dl div{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+dt{color:var(--muted);font-size:14px}
+dd{margin:0;font-weight:600;text-align:end}
+.fol{color:var(--blue);font-size:20px;font-weight:800}
+.plats{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.pl{display:inline-flex;align-items:center;gap:6px;background:var(--hover);border-radius:14px;padding:0 10px;font-size:13px;font-weight:600}
+.pl i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.acts{display:flex;gap:8px;margin-top:auto}
+.btn{flex:1;text-align:center;text-decoration:none;border:0;border-radius:6px;padding:6px 12px;font-weight:700;cursor:pointer;background:var(--blue);color:#fff}
+.btn.ghost{background:var(--hover);color:var(--text)}
+.btn:hover{filter:brightness(.94)}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v10H8l-4 4V4zm4 4v2h8V8H8z"/></svg></div>
+  <h1>صفحات الإعلانات</h1>
+  <button class="icon-btn" id="theme" aria-label="تبديل الوضع الداكن"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+</header>
+<main>
+  <label class="drop" id="drop">
+    <strong>ارفع ملف Excel أو CSV</strong>
+    <span>الملف اللي بتطلعه الأداة، اسحبه هنا أو اضغط للاختيار</span>
+    <input id="file" type="file" accept=".xlsx,.xls,.csv" hidden>
+  </label>
+  <div class="tools" id="tools" hidden>
+    <input type="search" id="q" placeholder="ابحث باسم الصفحة">
+    <select id="sort" aria-label="الترتيب">
+      <option value="fd">الأكثر متابعين</option>
+      <option value="fa">الأقل متابعين</option>
+      <option value="dn">الأحدث بدءًا</option>
+      <option value="do">الأقدم بدءًا</option>
+      <option value="nm">الاسم</option>
+    </select>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="chips" id="chips"></div>
+  <section class="grid" id="grid"></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const COLORS={Facebook:'#1877F2',Instagram:'#E4405F',Messenger:'#A033FF','Audience Network':'#F7B928',Threads:'#65676B'};
+let rows=[],active=new Set();
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?(n/1e3).toFixed(1).replace(/\.0$/,'')+'K':String(n);
+const ts=d=>{const t=Date.parse(d);return isNaN(t)?0:t};
+const hue=s=>[...s].reduce((a,c)=>(a*31+c.charCodeAt(0))%360,7);
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+function setTheme(t){document.documentElement.dataset.theme=t;store.set('theme',t)}
+setTheme(store.get('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
+$('#theme').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+
+function pick(o,key){const k=Object.keys(o).find(x=>x.trim().toLowerCase()===key);return k===undefined?'':o[k]}
+function normalize(list){
+  return list.map(o=>{
+    const f=pick(o,'followers');
+    const n=typeof f==='number'?f:parseFloat(String(f).replace(/,/g,''));
+    return{name:String(pick(o,'page name')).trim(),started:String(pick(o,'started running on')).trim(),
+      platforms:String(pick(o,'platforms')).split(',').map(s=>s.trim()).filter(Boolean),
+      followers:isNaN(n)||f===''?null:n,url:String(pick(o,'page url')).trim()};
+  }).filter(r=>r.name);
+}
+function setRows(list,save){
+  rows=normalize(list);active.clear();
+  if(save)store.set('rows',JSON.stringify(rows));
+  const all=[...new Set(rows.flatMap(r=>r.platforms))];
+  $('#chips').innerHTML=all.map(p=>`<button class="chip" aria-pressed="false" data-p="${esc(p)}">${esc(p)}</button>`).join('');
+  $('#tools').hidden=!rows.length;render();
+}
+function render(){
+  const q=$('#q').value.trim().toLowerCase(),s=$('#sort').value;
+  let list=rows.filter(r=>r.name.toLowerCase().includes(q)&&[...active].every(p=>r.platforms.includes(p)));
+  const by={fd:(a,b)=>(b.followers??-1)-(a.followers??-1),fa:(a,b)=>(a.followers??Infinity)-(b.followers??Infinity),
+    dn:(a,b)=>ts(b.started)-ts(a.started),do:(a,b)=>ts(a.started)-ts(b.started),nm:(a,b)=>a.name.localeCompare(b.name)};
+  list.sort(by[s]);
+  $('#count').textContent=`${list.length} من ${rows.length} صفحة`;
+  $('#grid').innerHTML=list.length?list.map(r=>`
+  <article class="card">
+    <div class="head">
+      <div class="av" style="background:hsl(${hue(r.name)} 55% 45%)">${esc([...r.name][0].toUpperCase())}</div>
+      <div><h3 dir="auto">${esc(r.name)}</h3><small>صفحة فيسبوك</small></div>
+    </div>
+    <dl>
+      <div><dt>بدأ الإعلان</dt><dd>${esc(r.started||'—')}</dd></div>
+      <div><dt>المتابعين</dt><dd class="fol">${r.followers===null?'—':fmt(r.followers)}</dd></div>
+      <div><dt>المنصات</dt><dd class="plats">${r.platforms.length?r.platforms.map(p=>`<span class="pl" style="--c:${COLORS[p]||'#65676B'}"><i></i>${esc(p)}</span>`).join(''):'—'}</dd></div>
+    </dl>
+    <div class="acts">
+      <a class="btn" href="${esc(r.url)}" target="_blank" rel="noopener">فتح الصفحة</a>
+      <button class="btn ghost" data-copy="${esc(r.url)}">نسخ الرابط</button>
+    </div>
+  </article>`).join(''):'<p class="empty">مفيش صفحات مطابقة للبحث.</p>';
+}
+function loadFile(file){
+  if(!file)return;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',codepage:65001});
+    setRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}),true);
+  };
+  rd.readAsArrayBuffer(file);
+}
+const drop=$('#drop');
+$('#file').onchange=e=>loadFile(e.target.files[0]);
+['dragover','dragenter'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>loadFile(e.dataTransfer.files[0]));
+$('#q').oninput=render;$('#sort').onchange=render;
+$('#chips').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;const p=b.dataset.p;
+  active.has(p)?active.delete(p):active.add(p);b.setAttribute('aria-pressed',active.has(p));render()};
+$('#grid').onclick=e=>{const b=e.target.closest('[data-copy]');if(!b)return;
+  try{navigator.clipboard.writeText(b.dataset.copy);const t=b.textContent;b.textContent='اتنسخ';setTimeout(()=>b.textContent=t,1200)}catch(_){}};
+try{const saved=JSON.parse(store.get('rows')||'null');if(saved&&saved.length)setRows(saved,false)}catch(e){}
+</script>
+</body>
+</html>
