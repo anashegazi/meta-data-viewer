@@ -12,7 +12,7 @@
 :root{--bg:#F0F2F5;--card:#fff;--text:#050505;--muted:#65676B;--blue:#1877F2;--blue-soft:#E7F3FF;--line:#CED0D4;--hover:#E4E6EB;--shadow:0 1px 2px rgba(0,0,0,.2)}
 :root[data-theme="dark"]{--bg:#18191A;--card:#242526;--text:#E4E6EB;--muted:#B0B3B8;--blue:#2D88FF;--blue-soft:#263951;--line:#3E4042;--hover:#3A3B3C;--shadow:0 1px 2px rgba(0,0,0,.6)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:'Cairo','Segoe UI',Tahoma,sans-serif;line-height:1.6}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Cairo','Segoe UI',Tahoma,sans-serif;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .top{position:sticky;top:0;z-index:5;background:var(--card);box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;padding:8px 16px}
@@ -21,11 +21,15 @@ button,input,select{font:inherit;color:inherit}
 .top h1{font-size:20px;font-weight:800;margin:0;color:var(--blue);flex:1}
 .icon-btn{width:40px;height:40px;border-radius:50%;border:0;background:var(--hover);cursor:pointer;display:grid;place-items:center}
 .icon-btn svg{width:20px;height:20px;fill:var(--text)}
-main{max-width:1120px;margin:0 auto;padding:16px}
-.drop{background:var(--card);border:2px dashed var(--line);border-radius:8px;padding:28px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+main{max-width:1120px;width:100%;margin:0 auto;padding:16px;flex:1;display:flex;flex-direction:column;transition:all .2s ease}
+main.empty-state{justify-content:center;align-items:center}
+main.empty-state .drop{width:100%;max-width:520px;padding:54px 24px;box-shadow:var(--shadow)}
+.drop{background:var(--card);border:2px dashed var(--line);border-radius:12px;padding:24px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
 .drop:hover,.drop.over{border-color:var(--blue);background:var(--blue-soft)}
-.drop strong{display:block;font-size:18px;font-weight:700}
-.drop span{color:var(--muted);font-size:14px}
+.drop-icon{width:56px;height:56px;margin:0 auto 12px;border-radius:50%;background:var(--blue-soft);display:grid;place-items:center}
+.drop-icon svg{width:28px;height:28px;fill:var(--blue)}
+.drop strong{display:block;font-size:18px;font-weight:700;margin-bottom:4px}
+.drop span{color:var(--muted);font-size:15px;font-weight:600}
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0 8px}
 .tools input[type=search],.tools select{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 16px;height:38px}
 .tools input[type=search]{flex:1;min-width:180px}
@@ -60,10 +64,13 @@ dd{margin:0;font-weight:600;text-align:end}
   <h1>صفحات الإعلانات</h1>
   <button class="icon-btn" id="theme" aria-label="تبديل الوضع الداكن"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
 </header>
-<main>
+<main class="empty-state" id="main">
   <label class="drop" id="drop">
+    <div class="drop-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+    </div>
     <strong>ارفع ملف Excel أو CSV</strong>
-    <span>الملف اللي بتطلعه الأداة، اسحبه هنا أو اضغط للاختيار</span>
+    <span>اسحب الملف هنا</span>
     <input id="file" type="file" accept=".xlsx,.xls,.csv" hidden>
   </label>
   <div class="tools" id="tools" hidden>
@@ -109,7 +116,9 @@ function setRows(list,save){
   if(save)store.set('rows',JSON.stringify(rows));
   const all=[...new Set(rows.flatMap(r=>r.platforms))];
   $('#chips').innerHTML=all.map(p=>`<button class="chip" aria-pressed="false" data-p="${esc(p)}">${esc(p)}</button>`).join('');
-  $('#tools').hidden=!rows.length;render();
+  $('#tools').hidden=!rows.length;
+  $('#main').classList.toggle('empty-state', !rows.length);
+  render();
 }
 function render(){
   const q=$('#q').value.trim().toLowerCase(),s=$('#sort').value;
